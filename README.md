@@ -18,22 +18,22 @@ BANDSINTOWN_ID=
 # LATLONG_ID  for opencagedata.com
  LATLONG_ID=
 
-Get concerts
+#Get concerts
 Retrieves up to your latest 20 tweets:
 
 node liri.js concert-this Pink
 
-Get Song Info
+#Get Song Info
 Retrieves song information for a track:
 
 node liri.js spotify-this-song "American Girl"
 
-Get Movie Info
+#Get Movie Info
 Retrieves movie information for a movie:
 
 node liri.js movie-this "Star Wars"
 
-Get Random Info
+#Get Random Info
 Gets random text inside a file and does what it says:
 
 node liri.js do-what-it-says
