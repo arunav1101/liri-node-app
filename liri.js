@@ -1,24 +1,11 @@
-var axios = require("axios");
-var omdbApi = require('omdb-client');
-var Spotify = require('node-spotify-api');
-var moment = require('moment');
-var fs = require('fs');
-var path = require('path')
-var os = require('os');
-var _ = require('lodash');
-
-//***************API's */
-
-// [Node-Spotify-API](https://www.npmjs.com/package/node-spotify-api)
-
-//  [Axios](https://www.npmjs.com/package/axios)
-
-// You'll use Axios to grab data from the [OMDB API](http://www.omdbapi.com) and the [Bands In Town API](http://www.artists.bandsintown.com/bandsintown-api)
-
-// [Moment](https://www.npmjs.com/package/moment)
-
-//  [DotEnv](https://www.npmjs.com/pacnpm i dotenvkage/dotenv)
-//******************** */
+const axios = require("axios");
+const omdbApi = require('omdb-client');
+const Spotify = require('node-spotify-api');
+const moment = require('moment');
+const fs = require('fs');
+const path = require('path')
+const os = require('os');
+const keys = require('./keys.js')
 
 //********logger************ */
 function appendFile(command, value) {
@@ -37,11 +24,12 @@ function readFile() {
 function searchMovies(movies = 'alien') {
     appendFile(process.argv[2], movies);
     var params = {
-        apiKey: 'trilogy',
+        apiKey: keys.omdb.id,
         title: movies.trim(),
         year: 2012
     }
     omdbApi.get(params, function (err, data) {
+        console.log('\n\n');
         console.log(`* Title of the movie is ${data.Title}`);
         console.log(`* IMDB Rating of the movie is ${data.imdbRating}`);
         console.log(`* Rotten Tomatoes Rating of the movie ${data.Ratings[0].value}`);
@@ -49,12 +37,13 @@ function searchMovies(movies = 'alien') {
         console.log(`* Language of the movie is ${data.Language}`);
         console.log(`* Plot of the movie is ${data.Plot}`);
         console.log(`* Actors in the movie are ${data.Actors}`);
+        console.log('\n\n');
     });
 }
 
 /// ************format Address from lat long******
 function formatAddress(latlong) {
-    var queryURL = `https://api.opencagedata.com/geocode/v1/json?q=${latlong}&key=2bb14724541d469fbc31188506fb3e6f`;
+    const queryURL = `https://api.opencagedata.com/geocode/v1/json?q=${latlong}&key=${keys.latlongKey.id}`;
     const formattedAdress = axios({
         url: queryURL,
         method: "GET"
@@ -67,26 +56,22 @@ function formatAddress(latlong) {
 // ********************Bands in Town for concerts***************
 
 function searchConcerts(concerts = 'pink') {
-    let artist = concerts.trim();
+    const artist = concerts.trim();
     appendFile(process.argv[2], artist);
-    var queryURL = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp&limit=1";
+
+    const url = `https://rest.bandsintown.com/artists/${artist}/events?app_id=${keys.bands.id}&limit=1`;
+    // console.log(queryURL);
     axios({
-        url: queryURL,
+        url,
         method: "GET"
     }).then(concerts => {
-        //   console.log(latLongValue)
-        //    concerts.data.map(  concert => {
-        //   console.log(`Latlong====>${concert.venue.latitude},${concert.venue.longitude}`)
-        // const promise = 
         formatAddress(`${concerts.data[0].venue.latitude},${concerts.data[0].venue.longitude}`).then(address => {
-            console.log(`\n
-    ********************************************************\n
- *Venue Name: ${concerts.data[0].venue.name}\n\n*Venue:${address}\n
- *Date of the Event: ${moment(concerts.data[0].datetime).format('LLLL')}\n
-    ********************************************************`)
-            // return promise;
-            // })
-            // });
+            console.log(`\n\n`);
+            console.log('********************************************************');
+            console.log(`*Venue Name: ${concerts.data[0].venue.name}\n*Venue: ${address}`);
+            console.log(`*Date of the Event: ${moment(concerts.data[0].datetime).format('LLLL')}`);
+            console.log('********************************************************');
+            console.log(`\n\n`);
         });
     }).catch(err => {
         console.log('Search for another concert!!');
@@ -99,8 +84,8 @@ function searchConcerts(concerts = 'pink') {
 function songSearch(songs = 'The Sign') {
     appendFile(process.argv[2], songs);
     var spotify = new Spotify({
-        id: '42c2e2c6fb9c438ab666209481661822',
-        secret: '6080687f959f4a86ac8db3b0728b3fab'
+        id: keys.spotify.id,
+        secret: keys.spotify.secret
     });
     spotify.search({
         type: 'track',
@@ -109,10 +94,12 @@ function songSearch(songs = 'The Sign') {
         if (err) {
             return console.log('Error occurred: ' + err);
         }
-        console.log(`\n\n\n * The Name of song is : ${(data.tracks.items[0].name).toUpperCase()}`);
+        console.log('\n\n')
+        console.log(`* The Name of song is : ${(data.tracks.items[0].name).toUpperCase()}`);
         console.log(`* The Artist of song is : ${(data.tracks.items[0].artists[0].name).toUpperCase()}`);
         console.log(`* The Album of song is : ${(data.tracks.items[0].album.name).toUpperCase()}`);
         console.log(`* The Preview Url of song is : ${data.tracks.items[0].preview_url}`);
+        console.log('\n\n')
     });
 }
 // ********************Spotify for songs**************
@@ -127,4 +114,4 @@ let demand = {
     }
 }
 
-demand[process.argv[2]]((process.argv[3]) || (''))
+demand[process.argv[2]]((process.argv[3]) || undefined)
